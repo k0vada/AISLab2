@@ -14,22 +14,19 @@ namespace UdpClient
         {
             const string ip = "127.0.0.1";
             const int port = 8082;
-
             EndPoint udpEndPoint = new IPEndPoint(IPAddress.Parse(ip), port); // точка подключения
             EndPoint udpServerEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8081);
             var udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             udpSocket.Bind(udpEndPoint); // переводим сокет в режим ожидания, связывает соект и эндпоинт
             Console.WriteLine("Клиент успешно запущен!");
-            Console.WriteLine("Введите название файла");
-            string fileName = Console.ReadLine();
-            udpSocket.SendTo(Encoding.UTF8.GetBytes(fileName), udpServerEndPoint);
+
             Console.WriteLine("\nМЕНЮ ДЕЙСТВИЙ");
             Console.WriteLine("Выберете действие и нажмите соответствующую клавишу");
             Console.WriteLine("     1. Вывод всех записей на экран");
             Console.WriteLine("     2. Вывод записи по ID");
-            Console.WriteLine("     3. Сохранение данных в файл");
+            Console.WriteLine("     3. Сохранение данных");
             Console.WriteLine("     4. Удаление записи по ID");
-            Console.WriteLine("     5. Добавление записи в файл");
+            Console.WriteLine("     5. Добавление новой записи");
             Console.WriteLine("     Esc. Закрытие приложения");
 
             while (true)
@@ -53,6 +50,7 @@ namespace UdpClient
                 while (udpSocket.Available > 0);
                Console.WriteLine(data);
             }
+
         }
     }
 }

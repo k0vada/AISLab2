@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AISLab2.DataBase
 {
-    class StudentContext : DbContext
+    public class StudentContext : DbContext
     {
         public StudentContext()
             : base("DbConnection")
