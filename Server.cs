@@ -10,8 +10,13 @@ namespace AISLab2
 {
     public class Server
     {
-        const string ip = "127.0.0.1";
-        const int port = 8081;
+        static IPAddress serverIP = IPAddress.Parse("127.0.0.1");
+        const int serverPort = 8081;
+
+        static IPAddress clientIP = IPAddress.Parse("127.0.0.1");
+        const int clientPort = 8082;
+       // const string ip = "127.0.0.1";
+       // const int port = 8081;
         static async Task Main(string[] args)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
@@ -28,7 +33,7 @@ namespace AISLab2
                 try
                 {
 
-                    var udpEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
+                    var udpEndPoint = new IPEndPoint(serverIP, serverPort);
                     var udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                     udpSocket.Bind(udpEndPoint);
                     await ProcessClientCommand(udpSocket, logger, db);
@@ -44,51 +49,32 @@ namespace AISLab2
 
         private static async Task ProcessClientCommand(Socket udpSocket, Logger logger, StudentContext db)
         {
-            string serverAnswer; // Переменная ответа сервера клиенту
+           // string serverAnswer; // Переменная ответа сервера клиенту
             string data; // Cообщения от клиента
-            IPAddress clientIP = IPAddress.Parse("127.0.0.1");
-            const int clientPort = 8082;
+           // IPAddress clientIP = IPAddress.Parse("127.0.0.1");
+            //const int clientPort = 8082;
             EndPoint senderEndPoint = new IPEndPoint(clientIP, clientPort); // Эндпоинт клиента(отправителя сообщений) сюда будет сохранен адресс 
 
-            logger.Info("Server started at" + DateTime.Now);
+            logger.Info("Сервер успешно запущен" + DateTime.Now);
             Console.WriteLine("Сервер успешно запущен!");
 
             while (true)
             {
                 data = ReceiveData(udpSocket, senderEndPoint);
-                if (Check.UintCheck(data))
+                switch (data)
                 {
-                    Console.WriteLine("Выбор пользователя: " + data);
-                    logger.Info("Client choice:" + data);
-                    switch (Convert.ToInt32(data))
-                    {
-                        case 1: // Вывод всех записей на экран 
-                            serverAnswer = await FullOutputAsync(udpSocket, senderEndPoint, db);
-                            break;
-                        case 2: // Вывод записи по номеру 
-                            serverAnswer = await OutputByIdAsync(udpSocket, senderEndPoint, db); 
-                            break;
-                        case 3: // Запись данных
-                            serverAnswer = await SaveRecordsAsync(udpSocket, senderEndPoint, db);
-                            break;
-                        case 4: // Удалить запись по номеру
-                            serverAnswer = await DeleteRecordByIdAsync(udpSocket, senderEndPoint, db);
-                            break;
-                        case 5: // Добавление новой записи
-                            serverAnswer = await AddRecordAsync(udpSocket, senderEndPoint, db);
-                            break;
-                        default:
-                            serverAnswer = "\nОшибка ввода. Выберите и введите цифру от 1  до 5";
-                            break;
-                    }
-                    await SendDataAsync(udpSocket, senderEndPoint, serverAnswer);
-                }
-                else
-                {
-                    serverAnswer = "\nОшибка ввода. Попробуйте заново.";
-                    await SendDataAsync(udpSocket, senderEndPoint, serverAnswer);
-                    logger.Error("Incorrect user input");
-                    Console.WriteLine("Получены недопустимые данные");
+                    case "Add":
+                        await ReceiveDataForWriteAsync(udpSocket, senderEndPoint, db);
+                        break;
+                    case "Delete":
+                        await ReceiveDataForDeleteAsync(udpSocket, senderEndPoint, db);
+                        break;
+                    case "ListOfStudents":
+                        SendListOfStudents(udpSocket, senderEndPoint, db);
+                        break;
+                    default:
+                        logger.Error("Ошибка при приеме данных от клиента");
+                        break;
                 }
             }
         }

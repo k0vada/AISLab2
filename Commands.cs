@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using static AISLab2.DataInteraction;
 using static AISLab2.DataController;
 using System.Data.Entity;
 
@@ -65,6 +64,8 @@ namespace AISLab2
             {
                 List<Student> students = db.Students.ToList();
                 await SendDataAsync(udpSocket, senderEndPoint, JsonSerializer.Serialize(students));
+                //SendData(udpSocket, senderEndPoint, JsonSerializer.Serialize(students));
+
                 logger.Info("Cписок студентов отправлен клиенту.");
             }
             catch (Exception ex)
@@ -87,7 +88,7 @@ namespace AISLab2
             }
         }
 
-        public static async Task ReceiveDataForDelete(Socket udpSocket, EndPoint senderEndPoint, StudentContext db)
+        public static async Task ReceiveDataForDeleteAsync(Socket udpSocket, EndPoint senderEndPoint, StudentContext db)
         {
             string receivedIndex = await ReceiveDataAsync(udpSocket, senderEndPoint);
             try
